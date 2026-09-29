@@ -3,35 +3,31 @@ const app = express();
 
 app.use(express.json());
 
-// Intercepta e responde a todos os pedidos com os dados formatados do jogador
 app.all('*', (req, res) => {
-  console.log('Pedido recebido do jogo:', req.method, req.url);
-
-  // Formato compatível com rotas de perfil do jogo
+  console.log(`[${req.method}] ${req.url}`);
+  
+  // Resposta estruturada no padrão completo LeanCloud / T3
   res.json({
-    code: 0,
-    message: "success",
     objectId: "934623665449189377",
     uid: "934623665449189377",
     username: "REIDOSGAMETTK",
     nickname: "REIDOSGAMETTK",
+    name: "REIDOSGAMETTK",
     level: 100,
+    exp: 999999,
+    gold: 999999,
     coins: 999999,
     gems: 999999,
+    diamond: 999999,
     is_creator: true,
     creator_badge: 1,
+    creatorBadge: 1,
+    isCreator: true,
     official: true,
-    data: {
-      uid: "934623665449189377",
-      token: "fake_token_bypass",
-      nickname: "REIDOSGAMETTK",
-      level: 100,
-      coins: 999999,
-      gems: 999999,
-      is_creator: true,
-      creator_badge: 1,
-      official: true
-    }
+    role: "creator",
+    authData: {},
+    createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2026-09-29T00:00:00.000Z"
   });
 });
 
