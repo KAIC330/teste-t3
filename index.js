@@ -11,7 +11,10 @@ app.all('*', (req, res) => {
     data: {
       uid: "12345",
       token: "fake_token_bypass",
-      nickname: "JogadorT3",
+      nickname: "REIDOSGAMETTK",
+      level: 100,
+      coins: 999999,
+      gems: 999999,
       is_creator: true,
       creator_badge: 1,
       official: true
