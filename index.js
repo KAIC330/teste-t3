@@ -4,6 +4,9 @@ const app = express();
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
 app.use((req, res) => {
+  if (req.originalUrl.startsWith('/logreceiver')) {
+    return res.json({ code: 0, msg: 'ok', data: {} });
+  }
   const body = req.body && req.body.length
     ? req.body.toString('utf8').slice(0, 1500)
     : '';
@@ -19,4 +22,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v2 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v3 a correr na porta ' + port));
