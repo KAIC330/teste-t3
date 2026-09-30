@@ -9,7 +9,7 @@ function baseUrl(req) {
 }
 
 function ok(data) {
-  return { errorCode: '0', status: '1', data: data || {} };
+  return { errorCode: '0', errorDesc: '', status: '1', data: data || {} };
 }
 
 function initResponse(req) {
@@ -55,14 +55,22 @@ app.use((req, res) => {
     body: raw.slice(0, 2000)
   }));
 
-  if (url.startsWith('/ucenter2.0/entry/entry')) {
+  if (url.startsWith('/ucenter2.0/entry/entry') || url.startsWith('/ucenter2.0/heartbeat')) {
     let svc = '';
     try { svc = JSON.parse(raw).service || ''; } catch (e) {}
+    console.log('-> servico: ' + svc);
     if (svc === 'palm.platform.ucenter.init') {
-      console.log('-> init response enviada');
       return res.json(initResponse(req));
     }
-    console.log('-> servico sem resposta propria: ' + svc);
+    if (svc === 'palm.platform.ucenter.createRandomDeviceId') {
+      return res.json(ok({ randomDeviceId: 'dev' + Math.random().toString(16).slice(2, 14) }));
+    }
+    if (svc === 'palm.platform.ucenter.sdkUpgrade') {
+      return res.json(ok({ code: '3', url: '', fileSize: '0', description: '', version: '1.0.0' }));
+    }
+    if (svc === 'palm.platform.ucenter.heartbeat_v2') {
+      return res.json(ok({ messages: [] }));
+    }
     return res.json(ok({}));
   }
 
@@ -70,4 +78,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v4 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v5 a correr na porta ' + port));
