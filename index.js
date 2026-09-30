@@ -19,4 +19,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v2 a correr na porta ' + port));
