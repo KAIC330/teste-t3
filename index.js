@@ -3,7 +3,7 @@ const app = express();
 
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
-app.all('*', (req, res) => {
+app.use((req, res) => {
   const body = req.body && req.body.length
     ? req.body.toString('utf8').slice(0, 1500)
     : '';
