@@ -34,7 +34,8 @@ function initResponse(req) {
     },
     notice: { switch: '0', content: '' },
     security: { identityAuth: '0', payIdentityAuth: '0' },
-    agreement: { switch: '0', version: '1' }
+    agreement: { switch: '0', version: '1' },
+    cdn: { sourceDomain: '', domainList: base + ',' + base }
   });
 }
 
@@ -78,4 +79,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v5 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v6 a correr na porta ' + port));
