@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = processors.env.PORT || 8080; // A Railway usa a porta 8080 por padrão
+const PORT = process.env.PORT || 8080; // A Railway usa a porta 8080 por padrão
 
 // Esta é a rota que o jogo vai procurar assim que abrir
 app.get('/gameconfig.xml', (req, res) => {
