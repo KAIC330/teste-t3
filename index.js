@@ -1,17 +1,22 @@
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 8080; // A Railway usa a porta 8080 por padrão
 
-// Esta é a rota que o jogo vai procurar assim que abrir
-app.get('/gameconfig.xml', (req, res) => {
-    res.header("Content-Type", "application/xml");
-    res.send(`<?xml version="1.0" encoding="utf-8"?>
-<config>
-    <server_status>online</server_status>
-    <!-- Aqui dentro vai as configurações que estavam no jogo original -->
-</config>`);
+app.use(express.raw({ type: '*/*', limit: '10mb' }));
+
+app.all('*', (req, res) => {
+  const body = req.body && req.body.length
+    ? req.body.toString('utf8').slice(0, 1500)
+    : '';
+  console.log(JSON.stringify({
+    t: new Date().toISOString(),
+    method: req.method,
+    path: req.originalUrl,
+    type: req.headers['content-type'] || '',
+    len: req.body ? req.body.length : 0,
+    body
+  }));
+  res.json({ code: 0, msg: 'ok', data: {} });
 });
 
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log('Servidor a correr na porta ' + port));
