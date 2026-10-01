@@ -56,49 +56,46 @@ app.post('/ucenter2.0/entry/entry', (req, res) => {
   }
 
   if (service === 'palm.platform.ucenter.init') {
+    // Campos que o SDK pode ler tanto soltos em "data" quanto dentro de
+    // "data.initInfo" -- colocamos nos dois lugares para nao depender de
+    // adivinhar certo qual dos dois caminhos o codigo realmente usa.
+    const serviceUrls = {
+      ucenterEntryUrl: BASE + '/ucenter2.0/entry/entry',
+      ucenterCoreUrl: BASE + '/ucenter2.0',
+      ucenterHeartbeatUrl: BASE + '/ucenter2.0/heartbeat/heartbeat',
+      bcenterUrl: BASE + '/billingcenter2.0',
+      pushServerUrl: BASE + '/ucenter2.0/push2.0/sdkpush',
+      identityAuthUrl: BASE + '/login/identity_authentication',
+      sdkPageUrl: BASE
+    };
+
     return res.json({
       status: '1',
-      data: {
-        sessionId: 'sess_' + Date.now(),
-        isLimit: '0',
-        heartBeatInterval: '60',
-        sandBoxSwitch: '0',
-        forceTouristBindSwitch: '0',
-        agreement: '0',
-        userVersion: '1',
-        longtuId: 'lt_' + Date.now(),
-        initInfo: {
-          ucenterCoreUrl: BASE + '/ucenter2.0',
-          ucenterHeartbeatUrl: BASE + '/ucenter2.0/heartbeat/heartbeat',
-          bcenterUrl: BASE + '/billingcenter2.0',
-          pushServerUrl: BASE + '/ucenter2.0/push2.0/sdkpush',
-          identityAuthUrl: BASE + '/login/identity_authentication',
-          sdkPageUrl: BASE + '/sdk3.0.v2/global/index.html#',
-          '/login/login_first': BASE + '/login/login_first',
-          '/login/login_switch': BASE + '/login/login_switch',
-          '/login/upgrade_tip': BASE + '/login/upgrade_tip',
-          '/login/login_bindphone': BASE + '/login/login_bindphone',
-          '/login/login_prompt': BASE + '/login/login_prompt',
-          '/pcenter/index': BASE + '/pcenter/index',
-          '/ucenter/menu': BASE + '/ucenter/menu',
-          '/question/question_index': BASE + '/question/question_index',
-          '/login/identity_authentication': BASE + '/login/identity_authentication',
-          '/pcenter/upgrade': BASE + '/pcenter/upgrade',
-          '/login/prompt_cdkey': BASE + '/login/prompt_cdkey',
-          '/ucenter/experience_over': BASE + '/ucenter/experience_over',
-          '/ucenter/privacy': BASE + '/ucenter/privacy',
-          '/ucenter/personal_infolist': BASE + '/ucenter/personal_infolist',
-          '/ucenter/third_infolist': BASE + '/ucenter/third_infolist'
-        },
+      data: Object.assign({
         ip: '0.0.0.0',
-        ipInfo: '0.0.0.0',
-        locationCountry: '',
-        locationProvince: '',
-        customerServiceSwitch: '0',
-        scanCodeSwitch: '0',
-        switch: '0',
-        content: ''
-      }
+        isLimit: '0',
+        limitDesc: '',
+        sessionId: 'sess_' + Date.now(),
+        longtuId: 'lt_' + Date.now(),
+        heartBeatInterval: '60',
+        cdn: [],
+        agreement: { switch: '0', version: '1' },
+        ipInfo: { locationCountry: '', locationProvince: '' },
+        notice: { switch: '0', content: '' },
+        activateCode: { switch: '0', openActivateWin: '0' },
+        security: {},
+        gameInfo: {},
+        initInfo: Object.assign({
+          sdkLogSwitch: '0',
+          protocolSwitch: '0',
+          advertismentSwitch: '0',
+          sandBoxSwitch: '0',
+          forceTouristBindSwitch: '0',
+          userVersion: '1',
+          customerServiceSwitch: '0',
+          scanCodeSwitch: '0'
+        }, serviceUrls)
+      }, serviceUrls)
     });
   }
 
@@ -116,5 +113,5 @@ app.all('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor v5 a correr na porta ${PORT}`);
+  console.log(`Servidor v6 a correr na porta ${PORT}`);
 });
