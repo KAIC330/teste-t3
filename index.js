@@ -47,6 +47,11 @@ app.use((req, res) => {
     return res.json({ code: 0, msg: 'ok', data: {} });
   }
 
+  // Se o jogo abrir uma rota de página web/SDK e esperar HTML
+  if (url.includes('/gscfront') || url === '/' || req.headers['accept']?.includes('text/html')) {
+    return res.send('<html><body><h3>Servidor Ativo</h3></body></html>');
+  }
+
   console.log(JSON.stringify({
     t: new Date().toISOString(),
     method: req.method,
@@ -79,4 +84,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v6 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v7 a correr na porta ' + port));
