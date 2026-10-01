@@ -35,7 +35,7 @@ function initResponse(req) {
     notice: { switch: '0', content: '' },
     security: { identityAuth: '0', payIdentityAuth: '0' },
     agreement: { switch: '0', version: '1' },
-    cdn: { sourceDomain: req.headers.host, domainList: base + ',' + base }
+    cdn: { sourceDomain: '', domainList: base + ',' + base }
   });
 }
 
@@ -44,7 +44,7 @@ app.use((req, res) => {
   const raw = req.body && req.body.length ? req.body.toString('utf8') : '';
 
   if (url.startsWith('/logreceiver')) {
-    console.log('LOG ' + raw.slice(0, 1500));
+    console.log('LOG:', raw.slice(0, 1500));
     return res.json({ code: 0, msg: 'ok', data: {} });
   }
 
@@ -60,7 +60,7 @@ app.use((req, res) => {
   if (url.startsWith('/ucenter2.0/entry/entry') || url.startsWith('/ucenter2.0/heartbeat')) {
     let svc = '';
     try { svc = JSON.parse(raw).service || ''; } catch (e) {}
-    console.log('-> servico: ' + svc);
+    console.log('-> service: ' + svc);
     if (svc === 'palm.platform.ucenter.init') {
       return res.json(initResponse(req));
     }
@@ -68,7 +68,7 @@ app.use((req, res) => {
       return res.json(ok({ randomDeviceId: 'dev' + Math.random().toString(16).slice(2, 14) }));
     }
     if (svc === 'palm.platform.ucenter.sdkUpgrade') {
-      return res.json(ok({ code: '3', url: '', fileSize: '0', description: '', version: '1.0.0' }));
+      return res.json(ok({ code: '0', url: 'https://teste-t3-production.up.railway.app/update', fileSize: '0', description: 'Latest version', version: '1.0.0', isUpdate: '0' }));
     }
     if (svc === 'palm.platform.ucenter.heartbeat_v2') {
       return res.json(ok({ messages: [] }));
