@@ -1,117 +1,82 @@
 const express = require('express');
 const app = express();
 
-const BASE = 'https://teste-t3-production.up.railway.app';
+app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
-// Captura o corpo cru de toda requisicao, mesmo quando o Content-Type
-// nao bate com o conteudo real (o jogo manda JSON com Content-Type de form).
-function captureRaw(req, res, buf) {
-  req.rawBody = buf.toString('utf8');
+function baseUrl(req) {
+  const proto = req.headers['x-forwarded-proto'] || 'https';
+  return proto + '://' + req.headers.host;
 }
-app.use(express.json({ verify: captureRaw }));
-app.use(express.urlencoded({ extended: true, verify: captureRaw }));
 
-app.use((req, res, next) => {
-  console.log(`[${req.method}] ${req.originalUrl} raw=${req.rawBody || ''}`);
-  next();
-});
+function ok(data) {
+  return { errorCode: '0', errorDesc: '', status: '1', data: data || {} };
+}
 
-// Tenta descobrir o JSON de verdade do pedido, mesmo quando o body-parser
-// interpretou errado (comum quando o Content-Type diz "form" mas o conteudo e JSON puro).
-function getJsonBody(req) {
-  if (req.body && typeof req.body === 'object' && req.body.service) {
-    return req.body;
+function initResponse(req) {
+  const base = baseUrl(req);
+  return ok({
+    sessionId: 'sess-' + Date.now(),
+    initInfo: {
+      ucenterEntryUrl: base + '/ucenter2.0/entry/entry',
+      ucenterCoreUrl: base + '/ucenter2.0/entry/entry',
+      ucenterHeartbeatUrl: base + '/ucenter2.0/heartbeat/heartbeat',
+      bcenterUrl: base + '/billingcenter2.0',
+      statisUrl: base + '/logreceiver/receiver',
+      heartBeatInterval: '60',
+      sdkLogSwitch: '0',
+      protocolSwitch: '0',
+      advertismentSwitch: '0',
+      pushServerUrl: '',
+      identityAuthUrl: '',
+      gscFrontUrl: base + '/gscfront/sdk/index.do',
+      sdkPageUrl: base,
+      userVersion: '2'
+    },
+    notice: { switch: '0', content: '' },
+    security: { identityAuth: '0', payIdentityAuth: '0' },
+    agreement: { switch: '0', version: '1' },
+    cdn: { sourceDomain: '', domainList: base + ',' + base }
+  });
+}
+
+app.use((req, res) => {
+  const url = req.originalUrl;
+  const raw = req.body && req.body.length ? req.body.toString('utf8') : '';
+
+  if (url.startsWith('/logreceiver')) {
+    return res.json({ code: 0, msg: 'ok', data: {} });
   }
-  if (req.rawBody) {
-    try {
-      return JSON.parse(req.rawBody);
-    } catch (e) {
-      // o corpo pode ter virado uma "chave" unica do form parser
-      const keys = Object.keys(req.body || {});
-      if (keys.length === 1 && keys[0].startsWith('{')) {
-        try { return JSON.parse(keys[0]); } catch (e2) {}
-      }
+
+  console.log(JSON.stringify({
+    t: new Date().toISOString(),
+    method: req.method,
+    path: url,
+    type: req.headers['content-type'] || '',
+    len: raw.length,
+    body: raw.slice(0, 2000)
+  }));
+
+  if (url.startsWith('/ucenter2.0/entry/entry') || url.startsWith('/ucenter2.0/heartbeat')) {
+    let svc = '';
+    try { svc = JSON.parse(raw).service || ''; } catch (e) {}
+    console.log('-> servico: ' + svc);
+    if (svc === 'palm.platform.ucenter.init') {
+      return res.json(initResponse(req));
     }
-  }
-  return {};
-}
-
-// ---------- ucenter2.0: login + checkUpdate (sdkUpgrade) no mesmo endereco ----------
-app.post('/ucenter2.0/entry/entry', (req, res) => {
-  const body = getJsonBody(req);
-  const service = body.service;
-  console.log('  service=', service);
-
-  if (service === 'palm.platform.ucenter.sdkUpgrade') {
-    return res.json({
-      status: '1',
-      data: {
-        code: '0',        // 0 = sem atualizacao, 1 = opcional, 2 = obrigatoria
-        url: '',
-        fileSize: '0',
-        description: '',
-        version: ''
-      }
-    });
+    if (svc === 'palm.platform.ucenter.createRandomDeviceId') {
+      return res.json(ok({ randomDeviceId: 'dev' + Math.random().toString(16).slice(2, 14) }));
+    }
+    if (svc === 'palm.platform.ucenter.sdkUpgrade') {
+      return res.json(ok({ code: '3', url: '', fileSize: '0', description: '', version: '1.0.0' }));
+    }
+    if (svc === 'palm.platform.ucenter.heartbeat_v2') {
+      return res.json(ok({ messages: [] }));
+    }
+    return res.json(ok({}));
   }
 
-  if (service === 'palm.platform.ucenter.init') {
-    // Campos que o SDK pode ler tanto soltos em "data" quanto dentro de
-    // "data.initInfo" -- colocamos nos dois lugares para nao depender de
-    // adivinhar certo qual dos dois caminhos o codigo realmente usa.
-    const serviceUrls = {
-      ucenterEntryUrl: BASE + '/ucenter2.0/entry/entry',
-      ucenterCoreUrl: BASE + '/ucenter2.0',
-      ucenterHeartbeatUrl: BASE + '/ucenter2.0/heartbeat/heartbeat',
-      bcenterUrl: BASE + '/billingcenter2.0',
-      pushServerUrl: BASE + '/ucenter2.0/push2.0/sdkpush',
-      identityAuthUrl: BASE + '/login/identity_authentication',
-      sdkPageUrl: BASE
-    };
-
-    return res.json({
-      status: '1',
-      data: Object.assign({
-        ip: '0.0.0.0',
-        isLimit: '0',
-        limitDesc: '',
-        sessionId: 'sess_' + Date.now(),
-        longtuId: 'lt_' + Date.now(),
-        heartBeatInterval: '60',
-        cdn: [],
-        agreement: { switch: '0', version: '1' },
-        ipInfo: { locationCountry: '', locationProvince: '' },
-        notice: { switch: '0', content: '' },
-        activateCode: { switch: '0', openActivateWin: '0' },
-        security: {},
-        gameInfo: {},
-        initInfo: Object.assign({
-          sdkLogSwitch: '0',
-          protocolSwitch: '0',
-          advertismentSwitch: '0',
-          sandBoxSwitch: '0',
-          forceTouristBindSwitch: '0',
-          userVersion: '1',
-          customerServiceSwitch: '0',
-          scanCodeSwitch: '0'
-        }, serviceUrls)
-      }, serviceUrls)
-    });
-  }
-
-  res.json({ status: '1', data: {} });
+  return res.json(ok({}));
 });
 
-// ---------- rotas simples (placeholder) ----------
-app.get('/notice', (req, res) => {
-  res.json({ code: 0, message: 'success', data: [] });
-});
-
-app.all('*', (req, res) => {
-  res.json({ status: '1', data: {} });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor v6 a correr na porta ${PORT}`);
-});
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log('Servidor v6 a correr na porta ' + port));
