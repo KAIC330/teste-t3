@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-// Middleware de CORS (Adicionado para evitar bloqueios de requisições do jogo)
+// Middleware de CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -57,6 +57,20 @@ function initResponse(req) {
 // Rota para a interface Webview do SDK
 app.get('/gscfront/sdk/index.do', (req, res) => {
   res.send('<html><head><meta charset="utf-8"><title>Login</title></head><body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;"><h2>Carregando...</h2></body></html>');
+});
+
+// Resposta para verificações de versão e patcher (VersionList)
+app.all(['*version*', '*VersionList*', '*versionlist*'], (req, res) => {
+  res.json({
+    code: 0,
+    msg: 'success',
+    data: {
+      version: '1.0.795',
+      resVersion: '1.0.795',
+      forceUpdate: false,
+      cdnUrl: baseUrl(req)
+    }
+  });
 });
 
 // Middleware genérico para captura de rotas e rotas da SDK
@@ -133,4 +147,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v10 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v11 a correr na porta ' + port));
