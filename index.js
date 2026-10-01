@@ -47,9 +47,9 @@ app.use((req, res) => {
     return res.json({ code: 0, msg: 'ok', data: {} });
   }
 
-  // Se o jogo abrir uma rota de página web/SDK e esperar HTML
-  if (url.includes('/gscfront') || url === '/' || req.headers['accept']?.includes('text/html')) {
-    return res.send('<html><body><h3>Servidor Ativo</h3></body></html>');
+  // Tratamento para páginas do front-end do SDK
+  if (url.includes('/gscfront') || url === '/sdk' || url === '/index.do') {
+    return res.send('<html><body style="background:#111;color:#fff;text-align:center;padding-top:50px;"><h2>Carregando Login...</h2></body></html>');
   }
 
   console.log(JSON.stringify({
@@ -65,6 +65,7 @@ app.use((req, res) => {
     let svc = '';
     try { svc = JSON.parse(raw).service || ''; } catch (e) {}
     console.log('-> servico: ' + svc);
+    
     if (svc === 'palm.platform.ucenter.init') {
       return res.json(initResponse(req));
     }
@@ -77,6 +78,9 @@ app.use((req, res) => {
     if (svc === 'palm.platform.ucenter.heartbeat_v2') {
       return res.json(ok({ messages: [] }));
     }
+    if (svc === 'palm.platform.ucenter.login' || svc.includes('login')) {
+      return res.json(ok({ sessionId: 'sess-' + Date.now(), uid: '10001', token: 'mock-token-success' }));
+    }
     return res.json(ok({}));
   }
 
@@ -84,4 +88,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v7 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v8 a correr na porta ' + port));
