@@ -67,7 +67,7 @@ app.use((req, res) => {
       return res.json(ok({ randomDeviceId: 'dev' + Math.random().toString(16).slice(2, 14) }));
     }
     if (svc === 'palm.platform.ucenter.sdkUpgrade') {
-      return res.json(ok({ code: '3', url: '', fileSize: '0', description: '', version: '1.0.0' }));
+      return res.json(ok({ code: '0', url: '', fileSize: '0', description: '', version: '1.0.0', isUpdate: '0' }));
     }
     if (svc === 'palm.platform.ucenter.heartbeat_v2') {
       return res.json(ok({ messages: [] }));
