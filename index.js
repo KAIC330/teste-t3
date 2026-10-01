@@ -35,7 +35,7 @@ function initResponse(req) {
     notice: { switch: '0', content: '' },
     security: { identityAuth: '0', payIdentityAuth: '0' },
     agreement: { switch: '0', version: '1' },
-    cdn: { sourceDomain: '', domainList: base + ',' + base }
+    cdn: { sourceDomain: req.headers.host, domainList: base + ',' + base }
   });
 }
 
@@ -44,6 +44,7 @@ app.use((req, res) => {
   const raw = req.body && req.body.length ? req.body.toString('utf8') : '';
 
   if (url.startsWith('/logreceiver')) {
+    console.log('LOG ' + raw.slice(0, 1500));
     return res.json({ code: 0, msg: 'ok', data: {} });
   }
 
@@ -79,4 +80,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v6 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v7 a correr na porta ' + port));
