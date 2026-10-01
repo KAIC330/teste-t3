@@ -1,6 +1,19 @@
 const express = require('express');
 const app = express();
 
+// Middleware de CORS (Adicionado para evitar bloqueios de requisições do jogo)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// Middlewares para ler os payloads da requisição
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
@@ -41,10 +54,12 @@ function initResponse(req) {
   });
 }
 
+// Rota para a interface Webview do SDK
 app.get('/gscfront/sdk/index.do', (req, res) => {
   res.send('<html><head><meta charset="utf-8"><title>Login</title></head><body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;"><h2>Carregando...</h2></body></html>');
 });
 
+// Middleware genérico para captura de rotas e rotas da SDK
 app.use((req, res) => {
   const url = req.originalUrl;
   let raw = '';
