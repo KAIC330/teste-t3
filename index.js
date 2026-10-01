@@ -47,11 +47,6 @@ app.use((req, res) => {
     return res.json({ code: 0, msg: 'ok', data: {} });
   }
 
-  // Tratamento para páginas do front-end do SDK
-  if (url.includes('/gscfront') || url === '/sdk' || url === '/index.do') {
-    return res.send('<html><body style="background:#111;color:#fff;text-align:center;padding-top:50px;"><h2>Carregando Login...</h2></body></html>');
-  }
-
   console.log(JSON.stringify({
     t: new Date().toISOString(),
     method: req.method,
@@ -65,7 +60,6 @@ app.use((req, res) => {
     let svc = '';
     try { svc = JSON.parse(raw).service || ''; } catch (e) {}
     console.log('-> servico: ' + svc);
-    
     if (svc === 'palm.platform.ucenter.init') {
       return res.json(initResponse(req));
     }
@@ -73,13 +67,10 @@ app.use((req, res) => {
       return res.json(ok({ randomDeviceId: 'dev' + Math.random().toString(16).slice(2, 14) }));
     }
     if (svc === 'palm.platform.ucenter.sdkUpgrade') {
-      return res.json(ok({ code: '0', url: '', fileSize: '0', description: '', version: '1.0.0', isUpdate: '0' }));
+      return res.json(ok({ code: '3', url: '', fileSize: '0', description: '', version: '1.0.0' }));
     }
     if (svc === 'palm.platform.ucenter.heartbeat_v2') {
       return res.json(ok({ messages: [] }));
-    }
-    if (svc === 'palm.platform.ucenter.login' || svc.includes('login')) {
-      return res.json(ok({ sessionId: 'sess-' + Date.now(), uid: '10001', token: 'mock-token-success' }));
     }
     return res.json(ok({}));
   }
@@ -88,4 +79,4 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log('Servidor v8 a correr na porta ' + port));
+app.listen(port, () => console.log('Servidor v6 a correr na porta ' + port));
